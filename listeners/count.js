@@ -1,106 +1,97 @@
-// Listener for messageCreate. It is a counting game. If message/number is next in the sequence (checked from db). It will increment the number and send a message. If not, it will send a message that the number is wrong. If the message author is equal to previous message author in db. Then just delete message
-const { Listener } = require('gcommands');
-const { WebhookClient, EmbedBuilder } = require('discord.js');
-const config = require('../config.json');
-const CountStateSchema = require('../schemas/countStateSchema');
-const CountUserSchema = require('../schemas/countUserSchema');
-
-const countMessedUpMessages = [
-    { message: ":x: | Ofc you ruined it. Back to one we go.", action: "end-counting" },
-    { message: ":x: | Bravo. That was spectacularly wrong.", action: "end-counting" },
-    { message: ":x: | Nice job, genius. Let's pretend that never happened.", action: "end-counting" },
-    { message: ":x: | OMG I PROMISE ITS NOT THIS HARD", action: "end-counting" },
-    { message: ":x: | Nice job, genius. Let's pretend that never happened.", action: "end-counting" },
-    { message: ":x: | i-...nvm", action: "end-counting" },
-    { message: ":x: | bruh", action: "end-counting" },
-    { message: ":x: | You’re really on a roll… a downward one. Resetting.", action: "end-counting" },
-    { message: ":woman_facepalming: | dawg atp lemme just do it for you", action: "count" },
-    { message: "<:jesus_wyd:1299004775962116148> | in a good mood today, i'll let it slide this once", action: "forgive" },
-];
+const { Listener } = require("gcommands");
+const config = require("../config.json");
+const CountStateSchema = require("../schemas/countStateSchema");
+const CountUserSchema = require("../schemas/countUserSchema");
 
 new Listener({
-    name: 'Counting Game',
-    event: 'messageCreate',
+  name: "Counting Game",
+  event: "messageCreate",
 
-    run: async ctx => {
-        if (ctx.author.bot) return;
-        if (isNaN(ctx.content) || ctx.content.trim() === "") return;
-        if (ctx.channel.id === config.discord.countChannelId) {
-            try {
-                let countDoc = await CountStateSchema.findById('config');
+  run: async (ctx) => {
+    // Ignore messages from bots
+    if (ctx.author.bot) return;
 
-                if (!countDoc) {
-                    countDoc = new CountStateSchema({
-                        _id: 'config',
-                        currentCount: 0,
-                        currentCountAuthorId: ''
-                    });
-                    await countDoc.save();
-                }
+    // Only process messages in the designated counting channel
+    if (ctx.channel.id !== config.discord.countChannelId) return;
 
-                let countUserDoc = await CountUserSchema.findById(ctx.author.id);
-                if (!countUserDoc) {
-                    countUserDoc = new CountUserSchema({
-                        _id: ctx.author.id,
-                        displayName: ctx.member.displayName,
-                        totalCounts: 0
-                    });
-                }
-
-                if (countDoc.currentCountAuthorId === ctx.author.id || countDoc.currentCount + 1 !== parseInt(ctx.content)) {
-                    console.log(countDoc.currentCount + 1, parseInt(ctx.content))
-                    console.log(countDoc.currentCountAuthorId === ctx.author.id, countDoc.currentCount + 1 !== parseInt(ctx.content))
-                    const randomMessageAction = countMessedUpMessages[Math.floor(Math.random() * countMessedUpMessages.length)];
-
-                    const messageEmbed = new EmbedBuilder()
-                        .setColor("#ffbf00")
-                        .setDescription(randomMessageAction.message)
-
-                    if (randomMessageAction.action === "end-counting") {
-                        countDoc.currentCount = 0;
-                        countDoc.currentCountAuthorId = '';
-
-                        await countDoc.save();
-                        await ctx.react("❌")
-                    }
-
-                    if (randomMessageAction.action === "count") {
-                        countDoc.currentCount = countDoc.currentCount + 1;
-                        countDoc.currentCountAuthorId = ctx.client.user.id
-
-                        await countDoc.save();
-                        await ctx.react("❌")
-
-                        await ctx.channel.send(`${countDoc.currentCount}`)
-                    }
-
-                    if (randomMessageAction.action === "forgive") {
-                        countDoc.currentCount = countDoc.currentCount + 1;
-                        countDoc.currentCountAuthorId = ctx.client.user.id;
-                        countUserDoc.totalCounts = countDoc.currentCount + 1;
-
-                        await countDoc.save();
-                        await countUserDoc.save();
-                    }
-
-                    await ctx.channel.send({ embeds: [messageEmbed] })
-                }
-
-                if (countDoc.currentCount + 1 === parseInt(ctx.content)) {
-
-                    countUserDoc.displayName = ctx.member.displayName;
-                    countUserDoc.totalCounts = countUserDoc.totalCounts + 1;
-                    countDoc.currentCount = countDoc.currentCount + 1;
-                    countDoc.currentCountAuthorId = ctx.author.id;
-                    await countUserDoc.save();
-                    await countDoc.save();
-                    await ctx.react('✅')
-
-                }
-
-            } catch (error) {
-                console.error(error);
-            }
-        }
+    const content = ctx.content.trim();
+    if (isNaN(content)) {
+      await ctx.delete();
+      return;
     }
-})
+
+    const userNumber = parseInt(content, 10);
+
+    try {
+      // Fetch or create the global count document
+      let countDoc = await CountStateSchema.findById("config");
+      if (!countDoc) {
+        countDoc = new CountStateSchema({
+          _id: "config",
+          currentCount: 0,
+          currentCountAuthorId: "",
+        });
+        await countDoc.save();
+      }
+
+      // Prevent one person from counting twice in a row
+      if (ctx.author.id === countDoc.currentCountAuthorId) {
+        await ctx.delete();
+        return;
+      }
+
+      // Determine the expected next number
+      const nextNumber = countDoc.currentCount + 1;
+
+      if (userNumber === nextNumber) {
+        // Fetch or create the user's count document
+        let countUserDoc = await CountUserSchema.findById(ctx.author.id);
+        if (!countUserDoc) {
+          countUserDoc = new CountUserSchema({
+            _id: ctx.author.id,
+            displayName: ctx.member.displayName,
+            totalCounts: 0,
+          });
+        }
+
+        // Update the global count document
+        countDoc.currentCount = nextNumber;
+        countDoc.currentCountAuthorId = ctx.author.id;
+        await countDoc.save();
+
+        // Update the user's count
+        countUserDoc.displayName = ctx.member.displayName;
+        countUserDoc.totalCounts += 1;
+        await countUserDoc.save();
+
+        // Delete the user's original message
+        await ctx.delete();
+
+        // Fetch or create a webhook to re-send the count
+        let webhooks = await ctx.channel.fetchWebhooks();
+        let countingWebhook = webhooks.find(
+          (wh) => wh.name === "CountingWebhook"
+        );
+
+        if (!countingWebhook) {
+          countingWebhook = await ctx.channel.createWebhook({
+            name: "CountingWebhook",
+            avatar: ctx.author.displayAvatarURL({ dynamic: true }),
+          });
+        }
+
+        // Send the new count via the webhook to mimic the user
+        await countingWebhook.send({
+          content: content,
+          username: ctx.member.displayName,
+          avatarURL: ctx.author.displayAvatarURL({ dynamic: true }),
+        });
+      } else {
+        // If the message isn't the correct next number, delete it.
+        await ctx.delete();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  },
+});

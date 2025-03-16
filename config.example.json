@@ -1,56 +1,61 @@
 {
-    "discord": {
-        "token": "DISCORD_BOT_TOKEN",
-        "confessionsChannelId": "CONFESSIONS_CHANNEL_ID",
-        "suggestionsChannelId": "SUGGESTIONS_CHANNEL_ID",
-        "devGuildId": "DEVELOPMENT_GUILD_ID",
-        "welcomeChannelId": "WELCOME_CHANNEL_ID",
-        "leaveChannelId": "LEAVE_CHANNEL_ID",
-        "countChannelId": "COUNT_CHANNEL_ID",
-        "countChannelWebhook": "WEBHOOK_URL",
-        "voteCount": "VOTE_THRESHOLD",
-        "levelupChannelId": "LEVELUP_CHANNEL_ID",
-        "noXPChannels": [],
-        "levelRoles": [
-            {
-                "level": 5,
-                "roleId": "ROLE_ID"
-            }
-        ],
-        "reactionRoles": [
-            {
-                "messageId": "MESSAGE_ID_WITH_REACTIONS",
-                "roleEmojis": [
-                    {
-                        "emoji": "EMOJI/EMOJI ID",
-                        "roleId": "ROLE ID OF ROLE TO ASSIGN"
-                    },
-                    {
-                        "emoji": "EMOJI/EMOJI ID",
-                        "roleId": "ROLE ID OF ROLE TO ASSIGN"
-                    },
-                    {
-                        "emoji": "EMOJI/EMOJI ID",
-                        "roleId": "ROLE ID OF ROLE TO ASSIGN"
-                    },
-                    {
-                        "emoji": "EMOJI/EMOJI ID",
-                        "roleId": "ROLE ID OF ROLE TO ASSIGN"
-                    }
-                ]
-            }
+  "discord": {
+    "token": "DISCORD_BOT_TOKEN",
+    "confessionsChannelId": "CONFESSIONS_CHANNEL_ID",
+    "suggestionsChannelId": "SUGGESTIONS_CHANNEL_ID",
+    "devGuildId": "DEVELOPMENT_GUILD_ID",
+    "welcomeChannelId": "WELCOME_CHANNEL_ID",
+    "leaveChannelId": "LEAVE_CHANNEL_ID",
+    "countChannelId": "COUNT_CHANNEL_ID",
+    "countChannelWebhook": "WEBHOOK_URL",
+    "voteCount": "VOTE_THRESHOLD",
+    "levelupChannelId": "LEVELUP_CHANNEL_ID",
+    "leaderboardURL": "LEADERBOARD_URL",
+    "apiBaseURL": "API_BASE_URL",
+    "noXPChannels": [],
+    "levelRoles": [
+      {
+        "level": 5,
+        "roleId": "ROLE_ID"
+      }
+    ],
+    "reactionRoles": [
+      {
+        "messageId": "MESSAGE_ID_WITH_REACTIONS",
+        "roleEmojis": [
+          {
+            "emoji": "EMOJI/EMOJI ID",
+            "roleId": "ROLE ID OF ROLE TO ASSIGN"
+          },
+          {
+            "emoji": "EMOJI/EMOJI ID",
+            "roleId": "ROLE ID OF ROLE TO ASSIGN"
+          },
+          {
+            "emoji": "EMOJI/EMOJI ID",
+            "roleId": "ROLE ID OF ROLE TO ASSIGN"
+          },
+          {
+            "emoji": "EMOJI/EMOJI ID",
+            "roleId": "ROLE ID OF ROLE TO ASSIGN"
+          }
         ]
-    },
-    "mongoDB": {
-        "host": "HOST",
-        "port": "27017",
-        "username": "DATABASE_USER",
-        "password": "DATABASE_USER_PASS",
-        "database": "DATABASE_NAME",
-        "authSource": "AUTH_DATABASE",
-        "xpCollectionName": "XP_COLLECTION",
-        "countersCollectionName": "COUNTERS_COLLECTION",
-        "editorSessionsCollectionName": "EDITOR_SESSIONS_COLLECTION",
-        "bumpCollectionName": "BUMP_COLLECTION"
-    }
+      }
+    ]
+  },
+  "colors": {
+    "primary": "fdb0c0"
+  },
+  "mongoDB": {
+    "host": "HOST",
+    "port": "27017",
+    "username": "DATABASE_USER",
+    "password": "DATABASE_USER_PASS",
+    "database": "DATABASE_NAME",
+    "authSource": "AUTH_DATABASE",
+    "xpCollectionName": "XP_COLLECTION",
+    "countersCollectionName": "COUNTERS_COLLECTION",
+    "editorSessionsCollectionName": "EDITOR_SESSIONS_COLLECTION",
+    "bumpCollectionName": "BUMP_COLLECTION"
+  }
 }
